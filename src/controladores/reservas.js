@@ -13,6 +13,7 @@ function crearControladorReservas(servicio) {
             valores: {},
         });
     }
+
     async function mostrarDetalle(req, res) {
         const reserva = await servicio.obtenerPorId(req.params.id);
         if (!reserva) {
@@ -21,21 +22,28 @@ function crearControladorReservas(servicio) {
                 mensaje: "No existe una reserva con ese identificador.",
             });
         }
-        res.render("reservas/detalle", { titulo: reserva.estudiante, reserva});
+        res.render("reservas/detalle", {
+            titulo: reserva.estudiante,
+            id: reserva.id,
+            fecha: reserva.fecha,
+            sala: reserva.sala,
+            reserva
+        });
     }
+
     async function crear(req, res) {
         await servicio.crear(req.reservaValidada);
         res.redirect("/reservas");
     }
 
-async function estado(req, res) {
-    const cantidad = await servicio.contar();
-    res.status(200).json({
-        servicio: "Activo",
-        reservas: cantidad,
-        idSolicitud: res.locals.idSolicitud,
-    });
-}    
+    async function estado(req, res) {
+        const cantidad = await servicio.contar();
+        res.status(200).json({
+            servicio: "Activo",
+            reservas: cantidad,
+            solicitudId: res.locals.idSolicitud,
+        });
+    }
     async function listarApi(req, res) {
         const reservas = await servicio.listar(req.query.sala);
         res.json(reservas);

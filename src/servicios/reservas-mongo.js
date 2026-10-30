@@ -9,7 +9,7 @@ function representarReserva(documento) {
         fecha: documento.fecha,
         turno: documento.turno,
         personas: documento.personas,
-        disponible: documento.disponible
+        estado: documento.estado
     }
 };
 
@@ -60,6 +60,7 @@ function crearServicioReservasMongo() {
             fecha: datos.fecha,
             turno: datos.turno,
             personas: datos.personas,
+            estado: datos.estado,
         });
         return representarReserva(documento);
     }
@@ -74,7 +75,7 @@ function crearServicioReservasMongo() {
             fecha: datos.fecha,
             turno: datos.turno,
             personas: datos.personas,
-            disponible: datos.disponible
+            estado: datos.estado
 
         };
         const documento = await Reserva.findOneAndReplace({ _id: id }, reemplazo, {
@@ -87,7 +88,7 @@ function crearServicioReservasMongo() {
     async function actualizar(id, datos) {
         comprobarId(id);
         const cambios = {};
-        for (const campo of ["personas", "disponible"]) {
+        for (const campo of ["personas", "estado"]) {
             if (Object.hasOwn(datos, campo)) cambios[campo] = datos[campo];
         }
         if (Object.keys(cambios).length === 0) {

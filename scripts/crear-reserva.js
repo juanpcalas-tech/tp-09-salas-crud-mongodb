@@ -13,6 +13,7 @@ async function main() {
             fecha: "2026-10-11",
             turno: "Mañana",
             personas: 3,
+            estado: "Pendiente"
         });
         console.log("Reserva guardado. _id:", reserva._id.toString());
     } finally {

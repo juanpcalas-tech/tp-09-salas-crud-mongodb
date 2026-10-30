@@ -7,7 +7,7 @@ async function main() {
       fecha: "2026-10-11",
       turno: "Noche",
       personas: 2,
-    });
+      estado: "Pendiente"});
     await reserva.validate();
     console.log("Datos válidos; todavía no guardamos en MongoDB.");
 }

@@ -14,7 +14,8 @@ async function main() {
                 turno: reserva.turno,
                 fecha: reserva.fecha,
                 sala: reserva.sala,
-                personas: reserva.personas
+                personas: reserva.personas,
+                estado: reserva.estado
             })),
         );
         console.log("Total de reservas:", reservas.length);

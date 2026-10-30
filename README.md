@@ -99,4 +99,40 @@
         └── README.md
 
 
+8. Validaciones Generales (POST / PUT)
+    Para que una reserva sea considerada válida, debe cumplir simultáneamente las siguientes restricciones de negocio:
+    * **Estudiante:** Cadena de texto no vacía.
+    * **Email:** Debe ser un correo electrónico válido que contenga explícitamente el carácter `@`.
+    * **Fecha / Turno:** El turno debe pertenecer estrictamente a las opciones: `Mañana`, `Tarde` o `Noche`.
+    * **Sala:** Debe ser un recurso existente en el catálogo cerrado: `Sala Norte`, `Sala Sur` o `Sala Multimedia`.
+    * **Cantidad de Personas:** Debe ser obligatoriamente un número entero JSON (sin comillas), mayor o igual a 1 y menor o igual a 6.
+    * **Estado:** Campo restrictivo que sólo admite los valores lógicos: `Pendiente` o `Confirmada`.
 
+9. Restricciones Específicas de Modificación (PATCH)
+    Al realizar modificaciones parciales se ejecutan validaciones exclusivas de la capa de control de cambios:
+    * El cuerpo (`body`) de la petición debe ser obligatoriamente un objeto JSON.
+    * Se genera un rechazo inmediato (`400 Bad Request`) si se intentan enviar campos sensibles o estructurales (como alterar el nombre del estudiante, congelar la sala o redefinir la fecha).
+
+
+10. Matriz Observada (Flujo de Validaciones y Estados)
+
+A continuación, se detalla una matriz conceptual que representa el comportamiento del backend frente al estado de la solicitud entrante y los campos suministrados:
+
+| Método | Campos Suministrados en el Body | Validación Middleware | Acción del Servidor / Código de Respuesta |
+| :--- | :--- | :--- | :--- |
+| **POST / PUT** | Todos los campos válidos (`personas` entre 1 y 6, email con `@`) |  Pasa | Inserta/Reemplaza en DB. Retorna `201 Created` / `200 OK`. |
+| **POST / PUT** | Campos faltantes o fuera de rango (ej: `personas: 8`) |  Falla | No toca la DB. Responde inmediatamente con `400 Bad Request`. |
+| **POST / PUT** | Email sin carácter `@` |  Falla | No toca la DB. Responde con `400 Bad Request` ("Email inválido"). |
+| **PUT** | Intento de enviar una propiedad no estructural o extraña |  Falla | Bloqueo preventivo. Responde con `400 Bad Request`. |
+| **PATCH** | Intento de modificar `estudiante`, `sala`, `fecha` o `email` |  Falla | Bloqueo por contrato. Responde `400` ("Solo se puede cambiar Cant. de Personas o Estado."). |
+| **PATCH** | Modificación válida de `personas` (ej: de 2 a 5) o de `estado` |  Pasa | Ejecuta `$set` parcial en Mongoose. Retorna `200 OK` con el cambio. |
+| **CUALQUIERA**| ID malformado o que no cumple formato de ObjectId |  Falla | Interceptado por `comprobarId()`. Lanza excepción controlada `ID_INVALIDO`. |
+
+---
+11. Criterio de Borrado
+
+    El sistema implementa un **Criterio de Borrado Físico** (Hard Delete). Al invocar con éxito el endpoint `DELETE /api/reservas/:id`, la capa de servicios se comunica con el driver de base de datos ejecutando el comando nativo `Reserva.deleteOne({ _id: id })`. 
+    Dado que las reservas representan ocupaciones físicas puntuales de espacios comunes, una cancelación definitiva se traduce en la eliminación estructural del documento para liberar almacenamiento en las colecciones y optimizar las consultas de disponibilidad en tiempo real.
+
+12. EVIDENCIAS
+    Las evidencias se cargan en archivo docs/evidencias subido en url presentada.
